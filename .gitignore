@@ -108,3 +108,17 @@ venv.bak/
 
 *.full.py
 *.shelve
+
+# pickle data
+subdomain_counts.pkl
+unique_urls.pkl
+visited_urls.pkl
+
+# frontier data
+frontier.shelve.bak
+frontier.shelve.dat
+frontier.shelve.dir
+
+# info files
+subdomains.txt
+notes.txt
