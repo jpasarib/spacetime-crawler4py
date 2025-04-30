@@ -1,0 +1,6 @@
+Possible no information pages:
+wics.ics.uci.edu/events/
+
+Maybe disallow login in path, leads to login pages, useless for information
+
+Could include wiki and swiki just avoid rev= or diff=?

@@ -60,10 +60,6 @@ def extract_next_links(url, resp):
     output_links = []
     parsed = urlparse(url)
 
-    redirect_codes = [301, 302, 303, 307, 308]
-    if resp.status in redirect_codes:
-        logger.warning(f"Redirect detected at {url}")
-
     if resp is None or resp.status != 200 or resp.raw_response is None:
         logger.info(f"{url} did not return a 200 status")
         return output_links
@@ -74,16 +70,17 @@ def extract_next_links(url, resp):
             subdomain_counts[subdomain] += 1
             logger.info(f"{subdomain}: has {subdomain_counts[subdomain]} unique pages")
         logger.info(f"# of unique sites visited: {len(unique_urls)}")
-        
     
     soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
     text = soup.get_text()
     words = text.split()
 
+    # low amount of content on page, no need to search for links
     if len(words) < 100:
         return output_links
     
+    # finding links in document & defragging them
     for link_tag in soup.find_all('a'):
         href = link_tag.get('href')
         if href:
@@ -106,10 +103,15 @@ def is_valid(url):
     # Decide whether to crawl this url or not. 
     # If you decide to crawl it, return True; otherwise return False.
     # There are already some conditions that return False.
+
     allowed_domains = ["ics.uci.edu", "cs.uci.edu", "informatics.uci.edu", "stat.uci.edu"]
+
+    # queries that lead to traps
     unallowed_queries = ["share=", "ical=", "outlook-ical=", "eventDate=", "tribe-bar-date=", "eventDisplay=", 
         "action=download", "action=login", "action=upload", "action=edit", "action=diff", "redirect_to=",
         "from="]
+
+    # calendar trap keywords
     calendar_keywords = ["calendar", "events", "schedule", "month"]
 
     try:
@@ -140,7 +142,7 @@ def is_valid(url):
         if domain == "wiki.ics.uci.edu":
             return False
 
-        # found main information before look at pages, useless to go through each page
+        # found main information before looking at pages, useless to go through each page/tag
         if domain == "ngs.ics.uci.edu" and ("/page/" in parsed.path.lower() or 
             "/tag/" in parsed.path.lower()):
             return False
@@ -161,7 +163,7 @@ def is_valid(url):
                 logger.info(f"{url} is a calendar trap")
                 return False
 
-        # robots.txt check for domains & subdomains found
+        # robots.txt check for domains & subdomains found (not needed for assignment)
         # if robots_txt_check(url, parsed) == False:
             # return False
         
@@ -195,6 +197,7 @@ def date_pattern(path):
     
     return False
 
+# not needed for assignment
 def robots_txt_check(url, parsed):
     domain = parsed.netloc.lower()
     path = parsed.path.lower()
@@ -230,7 +233,7 @@ def robots_txt_check(url, parsed):
 
     return True
 
-    
+# printing list of subdomains & each count
 if __name__ == "__main__":
     with open("subdomains.txt2", "w") as f:
         for subdomain, count in sorted(subdomain_counts.items(), key=lambda item: item[1], reverse=True):
