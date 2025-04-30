@@ -24,6 +24,7 @@ if os.path.exists("unique_urls.pkl"):
 else: 
     unique_urls = set()
 
+
 if os.path.exists("subdomain_counts.pkl"):
     with open("subdomain_counts.pkl", "rb") as f:
         subdomain_counts = pickle.load(f)
@@ -33,17 +34,7 @@ else:
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
-    
-    # dumping data onto disk
-    with open("visited_urls.pkl", "wb") as f:
-        pickle.dump(visited_urls, f)
-
-    with open("unique_urls.pkl", "wb") as f:
-        pickle.dump(unique_urls, f)
-
-    with open("subdomain_counts.pkl", "wb") as f:
-        pickle.dump(subdomain_counts, f)
-    
+    pickle_dump()
     return [link for link in links]
 
 
@@ -97,6 +88,8 @@ def extract_next_links(url, resp):
                 # add to visited urls to avoid checking if it is valid again
                 else:
                     visited_urls.add(clean_url)
+
+    pickle_dump()
     return output_links
 
 def is_valid(url):
@@ -108,12 +101,13 @@ def is_valid(url):
 
     # queries that lead to traps
     unallowed_queries = ["share=", "ical=", "outlook-ical=", "eventDate=", "tribe-bar-date=", "eventDisplay=", 
-        "action=download", "action=login", "action=upload", "action=edit", "action=diff", "redirect_to=",
-        "from="]
+        "action=download", "action=login", "action=upload", "action=edit", "action=diff", "action=history",
+        "redirect_to=", "from=", "do=diff", "rev=", "do=edit"]
 
     # calendar trap keywords
     calendar_keywords = ["calendar", "events", "schedule", "month"]
 
+    pickle_dump()
     try:
         parsed = urlparse(url)
         domain = parsed.netloc.lower()
@@ -129,7 +123,7 @@ def is_valid(url):
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz"
-            + r"|img|h|cp|mol|db|py|cpp|ipynb|ppsx|can|war|apk)$", parsed.path.lower()):
+            + r"|img|h|cp|mol|db|py|cpp|ipynb|ppsx|can|war|apk|bam|lif)$", parsed.path.lower()):
             return False
         
 
@@ -147,7 +141,7 @@ def is_valid(url):
             "/tag/" in parsed.path.lower()):
             return False
 
-        # found in robots.txt of many sites, leads to a WordPress login so no information
+        # leads to a WordPress login so no information
         if parsed.path.startswith("/wp-admin/"):
             return False
 
@@ -197,6 +191,17 @@ def date_pattern(path):
     
     return False
 
+def pickle_dump():
+    # dumping data onto disk
+    with open("visited_urls.pkl", "wb") as f:
+        pickle.dump(visited_urls, f)
+
+    with open("unique_urls.pkl", "wb") as f:
+        pickle.dump(unique_urls, f)
+
+    with open("subdomain_counts.pkl", "wb") as f:
+        pickle.dump(subdomain_counts, f)
+
 # not needed for assignment
 def robots_txt_check(url, parsed):
     domain = parsed.netloc.lower()
@@ -235,8 +240,9 @@ def robots_txt_check(url, parsed):
 
 # printing list of subdomains & each count
 if __name__ == "__main__":
+    unique_urls = set()  # fallback
     with open("subdomains.txt2", "w") as f:
         for subdomain, count in sorted(subdomain_counts.items(), key=lambda item: item[1], reverse=True):
             count = subdomain_counts[subdomain]
             f.write(f"{subdomain}, {count}\n")
-
+        f.write(f"# of unique urls: {len(unique_urls)}")

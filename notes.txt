@@ -4,3 +4,11 @@ wics.ics.uci.edu/events/
 Maybe disallow login in path, leads to login pages, useless for information
 
 Could include wiki and swiki just avoid rev= or diff=?
+
+.lif should be invalid
+
+https://www.ics.uci.edu/baloghdabrowski-rie10-centrobot.bibtex.txt 
+
+.bib 
+action=history
+filter in ics.uci.edu
