@@ -152,10 +152,6 @@ def is_valid(url):
             "/tag/" in parsed.path.lower()):
             return False
 
-        # same applies to ics.uci.edu
-        if domain.endswith("ics.uci.edu") and ("/tag/" in parsed.path.lower()):
-            return False
-
         # leads to a WordPress login so no information
         if parsed.path.startswith("/wp-admin/"):
             return False
