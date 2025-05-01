@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 from utils import get_logger
 import pickle
 import os
+import signal
+import sys
 from collections import Counter
 
 logger = get_logger("CRAWLER")
@@ -36,6 +38,13 @@ if os.path.exists("word_counter.pkl"):
 if os.path.exists("longest_page.pkl"):
     with open("longest_page.pkl", "rb") as f:
         longest_page_url, max_word_count = pickle.load(f)
+
+def handle_sigint(signum, frame):
+    logger.info("SIGINT recieved, saving data")
+    save_data()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, handle_sigint)
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)

@@ -1,0 +1,62 @@
+====== CRAWLER REPORT ======
+
+Total unique pages found: 7
+
+Longest page by word count:
+URL: 
+Word Count: 0
+
+Subdomain counts (sorted):
+www.stat.uci.edu, 6
+
+Top 50 most common words (excluding stopwords):
+abstract: 108
+statistics: 60
+university: 47
+data: 40
+seminar: 40
+department: 34
+series: 29
+bren: 28
+uci: 24
+information: 23
+donald: 22
+news: 21
+statistical: 21
+contact: 20
+seminars: 19
+april: 19
+february: 18
+science: 17
+bayesian: 17
+school: 16
+computer: 16
+sciences: 16
+opportunities: 16
+archive: 16
+modeling: 16
+faculty: 15
+directory: 15
+current: 15
+analysis: 15
+may: 15
+graduate: 14
+degrees: 14
+course: 14
+listings: 14
+uc: 13
+november: 13
+october: 13
+hall: 12
+january: 12
+models: 12
+research: 11
+estimation: 10
+model: 9
+ucla: 9
+explore: 8
+job: 8
+ph: 8
+master: 8
+student: 8
+undergraduate: 8
