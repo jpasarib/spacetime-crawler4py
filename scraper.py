@@ -4,37 +4,42 @@ from bs4 import BeautifulSoup
 from utils import get_logger
 import pickle
 import os
+from collections import Counter
 
 logger = get_logger("CRAWLER")
 
 visited_urls = set()
 unique_urls = set()
 subdomain_counts = {}
+word_counter = Counter()
+longest_page_url = ""
+max_word_count = 0
+
 
 # load needed data from disk, otherwise create the structure
 if os.path.exists("visited_urls.pkl"):
     with open("visited_urls.pkl", "rb") as f:
         visited_urls = pickle.load(f)
-else:
-    visited_urls = set()
 
 if os.path.exists("unique_urls.pkl"):
     with open("unique_urls.pkl", "rb") as f:
         unique_urls = pickle.load(f)
-else: 
-    unique_urls = set()
-
 
 if os.path.exists("subdomain_counts.pkl"):
     with open("subdomain_counts.pkl", "rb") as f:
         subdomain_counts = pickle.load(f)
-else:
-    subdomain_counts = {}
 
+if os.path.exists("word_counter.pkl"):
+    with open("word_counter.pkl", "rb") as f:
+        word_counter = pickle.load(f)
+
+if os.path.exists("longest_page.pkl"):
+    with open("longest_page.pkl", "rb") as f:
+        longest_page_url, max_word_count = pickle.load(f)
 
 def scraper(url, resp):
     links = extract_next_links(url, resp)
-    pickle_dump()
+    save_data()
     return [link for link in links]
 
 
@@ -64,9 +69,15 @@ def extract_next_links(url, resp):
     
     soup = BeautifulSoup(resp.raw_response.content, "html.parser")
 
-    text = soup.get_text()
-    words = text.split()
+    text = soup.get_text(separator=' ', strip=True)
+    words = re.findall(r'\b[a-zA-Z]{2,}\b', text.lower())
+    word_counter.update(words)
 
+    global longest_page_url, max_word_count
+    if len(words) > max_word_count:
+        max_word_count = len(words)
+        longest_page_url = url
+        logger.info(f"New longest page: {url} with {max_word_count} words")
     # low amount of content on page, no need to search for links
     if len(words) < 100:
         return output_links
@@ -89,7 +100,7 @@ def extract_next_links(url, resp):
                 else:
                     visited_urls.add(clean_url)
 
-    pickle_dump()
+    save_data()
     return output_links
 
 def is_valid(url):
@@ -107,7 +118,7 @@ def is_valid(url):
     # calendar trap keywords
     calendar_keywords = ["calendar", "events", "schedule", "month"]
 
-    pickle_dump()
+    save_data()
     try:
         parsed = urlparse(url)
         domain = parsed.netloc.lower()
@@ -139,6 +150,10 @@ def is_valid(url):
         # found main information before looking at pages, useless to go through each page/tag
         if domain == "ngs.ics.uci.edu" and ("/page/" in parsed.path.lower() or 
             "/tag/" in parsed.path.lower()):
+            return False
+
+        # same applies to ics.uci.edu
+        if domain.endswith("ics.uci.edu") and ("/tag/" in parsed.path.lower()):
             return False
 
         # leads to a WordPress login so no information
@@ -191,8 +206,8 @@ def date_pattern(path):
     
     return False
 
-def pickle_dump():
-    # dumping data onto disk
+# dumping data onto disk
+def save_data():
     with open("visited_urls.pkl", "wb") as f:
         pickle.dump(visited_urls, f)
 
@@ -201,6 +216,12 @@ def pickle_dump():
 
     with open("subdomain_counts.pkl", "wb") as f:
         pickle.dump(subdomain_counts, f)
+
+    with open("word_counter.pkl", "wb") as f:
+        pickle.dump(word_counter, f)
+
+    with open("longest_page.pkl", "wb") as f:
+        pickle.dump((longest_page_url, max_word_count), f)
 
 # not needed for assignment
 def robots_txt_check(url, parsed):

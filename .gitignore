@@ -113,6 +113,8 @@ venv.bak/
 subdomain_counts.pkl
 unique_urls.pkl
 visited_urls.pkl
+longest_page.pkl
+word_counter.pkl
 
 # frontier data
 frontier.shelve.bak
@@ -121,3 +123,6 @@ frontier.shelve.dir
 
 # info files
 subdomains.txt
+stopwords.txt
+report_longest_page.txt
+report_top_words.txt

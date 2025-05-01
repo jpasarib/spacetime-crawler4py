@@ -5,7 +5,7 @@ import pickle
 
 from utils.response import Response
 
-
+"""
 def download(url, config, logger=None):
     host, port = config.cache_server
     resp = requests.get(
@@ -37,4 +37,3 @@ def download(url, config, logger=None):
         "status": resp.status_code,
         "response": pickle.dumps(resp)
     })
-"""
