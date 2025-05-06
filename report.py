@@ -14,7 +14,7 @@ def load_stopwords():
 def generate_report():
     unique_urls = load_pickle("unique_urls.pkl", set())
     subdomain_counts = load_pickle("subdomain_counts.pkl", {})
-    longest_page_info = load_pickle("longest_page_info.pkl", ("", 0))
+    longest_page_info = load_pickle("longest_page.pkl", ("", 0))
     word_counter = load_pickle("word_counter.pkl", Counter())
     stopwords = load_stopwords()
 

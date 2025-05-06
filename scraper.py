@@ -39,6 +39,7 @@ if os.path.exists("longest_page.pkl"):
     with open("longest_page.pkl", "rb") as f:
         longest_page_url, max_word_count = pickle.load(f)
 
+# saving data in case of a sigint (ctrl + c)
 def handle_sigint(signum, frame):
     logger.info("SIGINT recieved, saving data")
     save_data()
@@ -87,6 +88,7 @@ def extract_next_links(url, resp):
         max_word_count = len(words)
         longest_page_url = url
         logger.info(f"New longest page: {url} with {max_word_count} words")
+
     # low amount of content on page, no need to search for links
     if len(words) < 100:
         return output_links
@@ -95,20 +97,28 @@ def extract_next_links(url, resp):
     for link_tag in soup.find_all('a'):
         href = link_tag.get('href')
         if href:
-            absolute_url = urljoin(url, href)
-            clean_url, fragment = urldefrag(absolute_url)
-            subdomain = parsed.netloc.lower()
+            try: 
+                absolute_url = urljoin(url, href)
+                clean_url, fragment = urldefrag(absolute_url)
+                subdomain = parsed.netloc.lower()
+                parsed_clean = urlparse(clean_url)
+                domain = parsed_clean.netloc.lower()
 
-            if clean_url not in visited_urls:
-                if is_valid(clean_url):
-                    visited_urls.add(clean_url)
-                    output_links.append(clean_url)
-                    if subdomain not in subdomain_counts:
-                        subdomain_counts[subdomain] = 0
-                # add to visited urls to avoid checking if it is valid again
-                else:
-                    visited_urls.add(clean_url)
+                if "your_ip" in domain:
+                    logger.info(f"Skipping placeholder domain: {clean_url}")
+                    continue
 
+                if clean_url not in visited_urls:
+                    if is_valid(clean_url):
+                        visited_urls.add(clean_url)
+                        output_links.append(clean_url)
+                        if subdomain not in subdomain_counts:
+                            subdomain_counts[subdomain] = 0
+                    # add to visited urls to avoid checking if it is valid again
+                    else:
+                        visited_urls.add(clean_url)
+            except Exception as e:
+                logger.warning(f"Skipping malformed href: {href} - {e}")
     save_data()
     return output_links
 
@@ -122,7 +132,7 @@ def is_valid(url):
     # queries that lead to traps
     unallowed_queries = ["share=", "ical=", "outlook-ical=", "eventDate=", "tribe-bar-date=", "eventDisplay=", 
         "action=download", "action=login", "action=upload", "action=edit", "action=diff", "action=history",
-        "redirect_to=", "from=", "do=diff", "rev=", "do=edit"]
+        "redirect_to=", "from=", "do=diff", "rev=", "do=edit", "affiliation_posts%5D="]
 
     # calendar trap keywords
     calendar_keywords = ["calendar", "events", "schedule", "month"]
@@ -143,7 +153,7 @@ def is_valid(url):
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz"
-            + r"|img|h|cp|mol|db|py|cpp|ipynb|ppsx|can|war|apk|bam|lif)$", parsed.path.lower()):
+            + r"|img|h|cp|mol|db|py|cpp|ipynb|ppsx|can|war|apk|bam|lif|mpg|c|shar)$", parsed.path.lower()):
             return False
         
 
