@@ -132,7 +132,7 @@ def is_valid(url):
     # queries that lead to traps
     unallowed_queries = ["share=", "ical=", "outlook-ical=", "eventDate=", "tribe-bar-date=", "eventDisplay=", 
         "action=download", "action=login", "action=upload", "action=edit", "action=diff", "action=history",
-        "redirect_to=", "from=", "do=diff", "rev=", "do=edit", "affiliation_posts%5D="]
+        "redirect_to=", "from=", "do=diff", "rev=", "do=edit"]
 
     # calendar trap keywords
     calendar_keywords = ["calendar", "events", "schedule", "month"]
